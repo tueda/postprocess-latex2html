@@ -1,0 +1,13 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "dictionaries": [
+        "python"
+    ],
+    "allowCompoundWords": true,
+    "words": [
+        "iacute",
+        "igrave",
+        "iuml"
+    ]
+}

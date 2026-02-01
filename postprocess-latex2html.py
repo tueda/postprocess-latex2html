@@ -150,7 +150,7 @@ class Options:
 class StylesheetHrefCollector(HTMLParser):
     """Collector for the (single) stylesheet link element."""
 
-    def __init__(self) -> None:  # noqa: D107  # overridden
+    def __init__(self) -> None:
         super().__init__()
         self.href: str | None = None
         self.count = 0
@@ -190,7 +190,7 @@ class StylesheetHrefCollector(HTMLParser):
 class TocCollector(HTMLParser):
     """Collector for the table of contents."""
 
-    def __init__(self, section_separator: str = DEFAULT_SECTION_SEPARATOR) -> None:  # noqa: D107  # overridden
+    def __init__(self, section_separator: str = DEFAULT_SECTION_SEPARATOR) -> None:
         super().__init__()
         self.section_separator = section_separator
         self.toc_found = False
@@ -278,7 +278,7 @@ class TocCollector(HTMLParser):
 class IdCollector(HTMLParser):
     """Collector for id attributes."""
 
-    def __init__(self) -> None:  # noqa: D107  # overridden
+    def __init__(self) -> None:
         super().__init__()
         self.counts: Counter[str] = Counter()
 

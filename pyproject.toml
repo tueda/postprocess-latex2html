@@ -43,12 +43,13 @@ lint.select = [
     "ALL",
 ]
 lint.ignore = [
-    "COM812", # flake8-commas, missing-trailing-comma
-    "D203",   # pydocstyle, one-blank-line-before-class
-    "D213",   # pydocstyle, multi-line-summary-second-line
+    "COM812", # missing-trailing-comma, incompatible with the Ruff formatter
+    "D107",   # undocumented-public-init, unnecessary if the class has a docstring
+    "D203",   # one-blank-line-before-class, incompatible with D211
+    "D213",   # multi-line-summary-second-line, incompatible with D212
 ]
 lint.per-file-ignores."test_*.py" = [
-    "S101", # flake8-bandit, assert
+    "S101", # assert, allowed in tests
 ]
 
 [tool.pyproject-fmt]

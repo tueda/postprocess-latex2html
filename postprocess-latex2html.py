@@ -35,6 +35,18 @@ class ShortLevelFormatter(logging.Formatter):
         return super().format(record)
 
 
+class WarningCountHandler(logging.Handler):
+    """Logging handler that counts warnings."""
+
+    def __init__(self) -> None:
+        super().__init__(logging.WARNING)
+        self.count = 0
+
+    def emit(self, record: logging.LogRecord) -> None:  # noqa: D102  # overridden
+        if record.levelno == logging.WARNING:
+            self.count += 1
+
+
 def _get_logger() -> logging.Logger:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.WARNING)
@@ -48,6 +60,8 @@ def _get_logger() -> logging.Logger:
 
 
 logger = _get_logger()
+warning_counter = WarningCountHandler()
+logger.addHandler(warning_counter)
 
 
 def remove_section_numbering(string: str) -> str:
@@ -553,6 +567,9 @@ def main(args: Sequence[str] | None = None) -> None:
         "-v", "--verbose", action="store_true", help="enable verbose output"
     )
     parser.add_argument(
+        "--fail-on-warning", action="store_true", help="fail if any warning is emitted"
+    )
+    parser.add_argument(
         "--has-author", action="store_true", help="document has author list"
     )
     parser.add_argument(
@@ -567,6 +584,13 @@ def main(args: Sequence[str] | None = None) -> None:
         [Path(f) for f in parsed_args.file],
         Options(require_author=parsed_args.has_author, require_toc=parsed_args.has_toc),
     )
+
+    if parsed_args.fail_on_warning and warning_counter.count > 0:
+        msg = (
+            f"{warning_counter.count} warning{plural_s(warning_counter.count)} emitted"
+        )
+        logger.error(msg)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

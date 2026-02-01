@@ -16,6 +16,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Literal, overload
 
 
 def _get_logger() -> logging.Logger:
@@ -128,8 +129,8 @@ class Options:
     section_sep: str = DEFAULT_SECTION_SEPARATOR
 
 
-class StylesheetHrefParser(HTMLParser):
-    """Parser for extracting a stylesheet link."""
+class StylesheetHrefCollector(HTMLParser):
+    """Collector for the (single) stylesheet link element."""
 
     def __init__(self) -> None:  # noqa: D107  # overridden
         super().__init__()
@@ -149,21 +150,27 @@ class StylesheetHrefParser(HTMLParser):
             self.href = href
             self.count += 1
 
+    @overload
     @staticmethod
-    def parse(text: str, *, strict: bool = False) -> str:
+    def parse(text: str, *, strict: Literal[True]) -> str: ...
+
+    @overload
+    @staticmethod
+    def parse(text: str, *, strict: Literal[False]) -> str | None: ...
+
+    @staticmethod
+    def parse(text: str, *, strict: bool = False) -> str | None:
         """Return the href attribute of the stylesheet link."""
-        p = StylesheetHrefParser()
+        p = StylesheetHrefCollector()
         p.feed(text)
         if strict and p.count != 1:
             msg = f"Expected exactly one stylesheet link, but found {p.count}"
             raise RuntimeError(msg)
-        if not p.href:
-            raise AssertionError
         return p.href
 
 
-class TocParser(HTMLParser):
-    """Parser for extracting the table of contents."""
+class TocCollector(HTMLParser):
+    """Collector for the table of contents."""
 
     def __init__(self, section_separator: str = DEFAULT_SECTION_SEPARATOR) -> None:  # noqa: D107  # overridden
         super().__init__()
@@ -238,7 +245,7 @@ class TocParser(HTMLParser):
         strict: bool = False,
     ) -> list[tuple[str, str]]:
         """Return the table of contents as a list of tuples (href, title)."""
-        p = TocParser(section_separator=section_separator)
+        p = TocCollector(section_separator=section_separator)
         p.feed(text)
         if strict:
             if not p.toc_found:
@@ -288,7 +295,7 @@ def process_html(path: Path, options: Options) -> None:
 
 
 def _fix_href(text: str) -> str:
-    css = StylesheetHrefParser.parse(text, strict=True)
+    css = StylesheetHrefCollector.parse(text, strict=True)
     main_html = Path(css).with_suffix(".html")
 
     text, n = replace_n(text, f'HREF="{main_html.name}#', 'HREF="#')
@@ -299,7 +306,7 @@ def _fix_href(text: str) -> str:
 
 
 def _fix_toc(text: str, options: Options) -> str:
-    toc = TocParser.parse(
+    toc = TocCollector.parse(
         text,
         section_separator=options.section_sep,
         strict=options.require_toc,

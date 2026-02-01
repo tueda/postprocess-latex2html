@@ -7,16 +7,31 @@ exec python3 "$0" "$@"
 __doc__ = """Post-process LateX2HTML output files."""
 
 import argparse
+import copy
 import functools
 import logging
 import re
 import sys
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Literal, overload
+from typing import ClassVar, Literal, overload
+
+
+class ShortLevelFormatter(logging.Formatter):
+    """Logging formatter with short level names."""
+
+    LEVEL_MAP: ClassVar[Mapping[str, str]] = {
+        "WARNING": "WARN",
+        "CRITICAL": "FATAL",
+    }
+
+    def format(self, record: logging.LogRecord) -> str:  # noqa: D102  # overridden
+        record = copy.copy(record)
+        record.levelname = self.LEVEL_MAP.get(record.levelname, record.levelname)
+        return super().format(record)
 
 
 def _get_logger() -> logging.Logger:
@@ -25,6 +40,8 @@ def _get_logger() -> logging.Logger:
     logger.propagate = False
     if not logger.handlers:
         handler = logging.StreamHandler()
+        formatter = ShortLevelFormatter("%(levelname)-5s %(message)s")
+        handler.setFormatter(formatter)
         logger.addHandler(handler)
     return logger
 
@@ -289,9 +306,9 @@ def process_html(path: Path, options: Options) -> None:
     if text != old_text:
         path.write_text(text)
     else:
-        logger.info("  No changes made")
+        logger.info("No changes made")
     elapsed = time.perf_counter() - t0
-    logger.info("  Finished in %.3f s", elapsed)
+    logger.info("Finished in %.3f s", elapsed)
 
 
 def _fix_href(text: str) -> str:
@@ -300,7 +317,7 @@ def _fix_href(text: str) -> str:
 
     text, n = replace_n(text, f'HREF="{main_html.name}#', 'HREF="#')
     if n > 0:
-        logger.info("  Fixed %d link URL%s", n, plural_s(n))
+        logger.info("Fixed %d link URL%s", n, plural_s(n))
 
     return text
 
@@ -365,7 +382,7 @@ def _fix_toc(text: str, options: Options) -> str:
         raise RuntimeError(msg)
 
     if text != old_text:
-        logger.info("  Generated %d permalink%s", i, plural_s(i))
+        logger.info("Generated %d permalink%s", i, plural_s(i))
 
     return text
 
@@ -388,10 +405,10 @@ def _make_slugs(toc: list[tuple[str, str]], options: Options) -> list[str]:
                 if new_slug not in seen:
                     break
                 i += 1
-            logger.info("  Two titles ended up with the same slug: %s", slug)
-            logger.info("    first:  %s", seen[slug])
-            logger.info("    second: %s", title)
-            logger.info("  The slug for the second has been changed: %s", new_slug)
+            logger.info("Two titles ended up with the same slug: %s", slug)
+            logger.info("  first:  %s", seen[slug])
+            logger.info("  second: %s", title)
+            logger.info("The slug for the second has been changed: %s", new_slug)
             slug = new_slug
         else:
             seen[slug] = title
@@ -406,9 +423,7 @@ def _fix_accents(text: str) -> str:
     text, n = replace_n(text, "&&#x308;#305;", "&iuml;", n)  # \"{\i}
 
     if n > 0:
-        logger.info(
-            "  Fixed %d malformed numeric character reference%s", n, plural_s(n)
-        )
+        logger.info("Fixed %d malformed numeric character reference%s", n, plural_s(n))
 
     return text
 
@@ -448,7 +463,7 @@ def _fix_author(text: str, options: Options) -> str:
         raise RuntimeError(msg)
 
     if n > 0:
-        logger.info("  Fixed %d markup in author list%s", n, plural_s(n))
+        logger.info("Fixed %d markup in author list%s", n, plural_s(n))
 
     return text
 
@@ -468,9 +483,9 @@ def process_css(path: Path) -> None:
     if text != old_text:
         path.write_text(text)
     else:
-        logger.info("  No changes made")
+        logger.info("No changes made")
     elapsed = time.perf_counter() - t0
-    logger.info("  Finished in %.3f s", elapsed)
+    logger.info("Finished in %.3f s", elapsed)
 
 
 def process_files(files: Sequence[Path], options: Options) -> None:

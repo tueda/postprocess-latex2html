@@ -552,8 +552,7 @@ def process_files(files: Sequence[Path], options: Options) -> None:
             case ".css":
                 process_css(path)
             case _:
-                msg = f"Unsupported file type: {suffix} ({path})"
-                raise RuntimeError(msg)
+                logger.warning("Skipping unsupported file type (%s): %s", suffix, path)
 
 
 def main(args: Sequence[str] | None = None) -> None:

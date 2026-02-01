@@ -13,6 +13,7 @@ import logging
 import re
 import sys
 import time
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from html.parser import HTMLParser
@@ -274,6 +275,31 @@ class TocCollector(HTMLParser):
         return p.results
 
 
+class IdCollector(HTMLParser):
+    """Collector for id attributes."""
+
+    def __init__(self) -> None:  # noqa: D107  # overridden
+        super().__init__()
+        self.counts: Counter[str] = Counter()
+
+    def handle_starttag(  # noqa: D102  # overridden
+        self,
+        tag: str,  # noqa: ARG002
+        attrs: Sequence[tuple[str, str | None]],
+    ) -> None:
+        for k, v in attrs:
+            # Ignore empty or missing IDs.
+            if k == "id" and v:
+                self.counts[v] += 1
+
+    @staticmethod
+    def parse(text: str) -> Counter[str]:
+        """Return a counter of id attribute values."""
+        p = IdCollector()
+        p.feed(text)
+        return p.counts
+
+
 def process_html(path: Path, options: Options) -> None:
     """Process an HTML file."""
     t0 = time.perf_counter()
@@ -300,6 +326,10 @@ def process_html(path: Path, options: Options) -> None:
     # See: https://github.com/latex2html/latex2html/commit/318864e
 
     text = _fix_author(text, options)
+
+    # Check for duplicate IDs.
+
+    _warn_duplicate_ids(text)
 
     # Save the changes if any.
 
@@ -466,6 +496,15 @@ def _fix_author(text: str, options: Options) -> str:
         logger.info("Fixed %d markup in author list%s", n, plural_s(n))
 
     return text
+
+
+def _warn_duplicate_ids(text: str) -> None:
+    c = IdCollector.parse(text)
+    for name, count in c.items():
+        if count > 1:
+            logger.warning(
+                "Duplicate ID found: %s (%d time%s)", name, count, plural_s(count)
+            )
 
 
 def process_css(path: Path) -> None:

@@ -1,0 +1,49 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: 0 0 1 * * # monthly
+
+jobs:
+  gitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
+      # for pip cache
+      - name: Create requirements.txt
+        run: echo 'gitlint' >requirements.txt
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install gitlint
+
+      - name: Run gitlint
+        run: gitlint
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
+      # for pip cache
+      - name: Create requirements.txt
+        run: echo 'pre-commit' >requirements.txt
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+          cache: pip
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1

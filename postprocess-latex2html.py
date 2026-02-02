@@ -1,4 +1,4 @@
-# !/bin/sh
+#!/bin/sh
 """:" .
 
 exec python3 "$0" "$@"

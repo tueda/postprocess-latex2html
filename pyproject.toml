@@ -47,6 +47,7 @@ lint.ignore = [
     "D107",   # undocumented-public-init, unnecessary if the class has a docstring
     "D203",   # one-blank-line-before-class, incompatible with D211
     "D213",   # multi-line-summary-second-line, incompatible with D212
+    "EXE003", # shebang-missing-python, uses /bin/sh shebang
 ]
 lint.per-file-ignores."test_*.py" = [
     "S101", # assert, allowed in tests

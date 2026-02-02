@@ -1,14 +1,14 @@
 # postprocess-latex2html
 
-This [script](#file-postprocess-latex2html-py) post-processes
+This script post-processes
 [LaTeX2HTML](https://github.com/latex2html/latex2html)-generated files.
 
 ## Install
 
-Either download the [script](https://gist.githubusercontent.com/tueda/cb625f9711d026c0fe4989b9f13f0a26/raw/postprocess-latex2html.py)
+Either download the [script](https://raw.githubusercontent.com/tueda/postprocess-latex2html/refs/heads/main/postprocess-latex2html.py)
 or install it with:
 ```bash
-pip install git+https://gist.github.com/tueda/cb625f9711d026c0fe4989b9f13f0a26.git
+pip install git+https://github.com/tueda/postprocess-latex2html.git
 ```
 
 ## Usage

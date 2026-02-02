@@ -8,7 +8,7 @@ requires = [
 name = "postprocess-latex2html"
 version = "0.1.0"
 description = "Post-process LaTeX2HTML-generated files"
-readme = "!postprocess-latex2html.md"
+readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",

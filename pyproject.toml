@@ -24,7 +24,7 @@ scripts.postprocess-latex2html = "run_postprocess_latex2html:main"
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.5",
+    "pre-commit>=4.6.0",
     "pytest>=9.0.3",
     "pytest-cov>=7",
     "pytest-xdist>=3.8",
